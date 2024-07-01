@@ -299,6 +299,33 @@ TEST(gf2sparse, kernel_sparse){
 
 }
 
+TEST(gf2sparse,inverse){
+
+    {
+
+        int n = 3;
+        auto mat = ldpc::gf2sparse::identity(n);
+        auto inv = ldpc::gf2sparse_linalg::inverse(mat);
+        ASSERT_TRUE(inv==mat);
+
+    }
+
+    {
+
+        int n = 3;
+        auto mat = vector<vector<int>>{{0},{1},{2}};
+        auto inv = ldpc::gf2sparse_linalg::inverse_csr(mat);
+        for(int i=0; i<inv.size(); i++){
+            ldpc::sparse_matrix_util::print_vector(inv[i]);
+        }
+
+    }
+
+    
+
+
+}
+
 
 
 int main(int argc, char **argv)

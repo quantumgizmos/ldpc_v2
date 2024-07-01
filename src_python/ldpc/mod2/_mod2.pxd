@@ -57,6 +57,9 @@ cdef extern from "gf2sparse_linalg.hpp" namespace "ldpc::gf2sparse_linalg":
 
     CsrMatrix cy_kernel(GF2Sparse* mat)
     CsrMatrix cy_row_complement_basis(GF2Sparse* mat)
+    vector[vector[int]] inverse_csr(vector[vector[int]]& mat)
+    vector[vector[int]] left_inverse_csr(vector[vector[int]]& mat)
+
 
 from libcpp.vector cimport vector
 

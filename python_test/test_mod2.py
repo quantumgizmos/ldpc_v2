@@ -2,8 +2,7 @@ import pytest
 import numpy as np
 import scipy.sparse
 from scipy.sparse import csr_matrix
-from ldpc.mod2 import io_test, rank, kernel, PluDecomposition, pivot_rows
-from ldpc.codes import rep_code, ring_code, hamming_code
+from ldpc.mod2 import io_test, rank, kernel, PluDecomposition, pivot_rows, inverse
 
 def test_constructor_rep_code():
 
@@ -200,10 +199,52 @@ def test_rank_case3():
     print(ker.toarray())
 
     print(ker@mat.T)
+
+
+def generate_full_rank_binary_matrix(n):
+    # Start with an identity matrix
+    I = np.identity(n, dtype=int)
     
+    # To ensure full rank, we need to perform row operations
+    # Randomly sum rows of the identity matrix
+    for i in range(n):
+        # Select a random row to add to the current row
+        random_row = np.random.randint(0, n)
+        if random_row != i:  # Ensure we are not adding the row to itself
+            I[i] = (I[i] + I[random_row]) % 2  # Binary addition (XOR)
 
+    for i in range(n):
+        # Select a random column to add to the current column
+        random_col = np.random.randint(0, n)
+        if random_col != i:
+            I[:, i] = (I[:, i] + I[:, random_col]) % 2
 
+    return I
+
+def test_inverse():
+
+    n = np.random.randint(2, 10)
+    mat = generate_full_rank_binary_matrix(n)
+    print(mat)
+    print(mat.shape)
+    inv = inverse(mat)
+    assert np.array_equal((inv@mat%2), np.identity(n, dtype=int)) 
+
+    mat = np.array([[1, 0, 0, 1, 1, 0, 1],
+       [0, 1, 0, 1, 0, 1, 1],
+       [0, 0, 1, 0, 1, 1, 1],
+       [1, 1, 0, 0, 1, 1, 0],
+       [1, 0, 1, 1, 0, 1, 0],
+       [0, 1, 1, 1, 1, 0, 0],
+       [1, 1, 1, 0, 0, 0, 1]])
+
+    print(rank(mat))
+    
+    assert rank(mat) == mat.shape[1]
+    
+    inv = inverse(mat)
+    assert np.array_equal((inv@mat%2), np.identity(mat.shape[1], dtype=int)) 
 
 
 if __name__ == "__main__":
-    test_rank_case3()
+    test_inverse()

@@ -173,7 +173,7 @@ namespace ldpc {
                     std::vector<int> add_rows;
                     for (auto &e: this->U.iterate_column(pivot_index)) {
                         int row_index = e.row_index;
-                        if (row_index > this->rank || row_index < this->rank && this->FULL_REDUCE == true) {
+                        if (row_index > this->rank || (row_index < this->rank && this->FULL_REDUCE == true)) {
                             add_rows.push_back(row_index);
                         }
                     }
@@ -826,6 +826,60 @@ namespace ldpc {
 
             return ker;
 
+        }
+
+        template<class GF2MATRIX>
+        ldpc::gf2sparse::GF2Sparse<> inverse(GF2MATRIX &mat) {
+
+            if(mat.m!=mat.n) throw std::invalid_argument("Matrix must be square.");
+            auto rr = ldpc::gf2sparse_linalg::RowReduce(mat);
+            rr.rref(true, false);
+            auto out = GF2MATRIX(mat.m,mat.n);
+            for(int i=0; i<mat.m; i++){
+                for(auto &e: rr.L.iterate_row(i)){
+                    out.insert_entry(i,e.col_index);
+                }
+            }
+            return out;
+         
+        }
+
+        std::vector<std::vector<int>> inverse_csr(std::vector<std::vector<int>>& mat_csr) {
+
+            auto mat = ldpc::gf2sparse::csr_to_gf2sparse(mat_csr);
+
+            if(mat.m!=mat.n) throw std::invalid_argument("Matrix must be square.");
+            auto rr = ldpc::gf2sparse_linalg::RowReduce(mat);
+            rr.rref(true, false);
+            std::vector<std::vector<int>> out;
+            for(int i=0; i<mat.m; i++){
+                out.emplace_back();
+                for(auto &e: rr.L.iterate_row(i)){
+                    out[i].push_back(e.col_index);
+                }
+            }
+            return out;
+         
+        }
+
+        std::vector<std::vector<int>> left_inverse_csr(std::vector<std::vector<int>>& mat_csr) {
+
+            auto mat = ldpc::gf2sparse::csr_to_gf2sparse(mat_csr);
+
+            if(mat.m!=mat.n) throw std::invalid_argument("Matrix must be square.");
+            auto rr = ldpc::gf2sparse_linalg::RowReduce(mat);
+            rr.rref(true, false);
+            auto UT = rr.U.transpose();
+            auto inverse = UT.matmul(rr.L);
+            std::vector<std::vector<int>> out;
+            for(int i=0; i<inverse.m; i++){
+                out.emplace_back();
+                for(auto &e: inverse.iterate_row(i)){
+                    out[i].push_back(e.col_index);
+                }
+            }
+            return out;
+         
         }
 
 //cython helper

@@ -82,7 +82,7 @@ cdef coords_to_scipy_sparse(vector[vector[int]]& entries, int m, int n, int entr
     smat = scipy.sparse.csr_matrix((data, (rows, cols)), shape=(m, n), dtype=np.uint8)
     return smat
 
-cdef csr_to_scipy_sparse(vector[vector[int]]& row_adjacency_list, int m, int n, int entry_count = -9999):
+cdef csr_to_scipy_sparse(vector[vector[int]]& row_adjacency_list, int m=0, int n=0, int entry_count = -9999):
     """
     Converts CSR matrix to sparse matrix
     """
@@ -457,9 +457,11 @@ cdef class PluDecomposition():
         cdef GF2Sparse* cpcm = Py2GF2Sparse(pcm)
         self.rr = new RowReduce(cpcm[0])
         self._MEM_ALLOCATED = True
+        
         self.full_reduce = full_reduce
         self.lower_triangular = full_reduce
         self.rr.rref(full_reduce,lower_triangular)
+
 
 
     def lu_solve(self, y: np.ndarray) -> np.ndarray:
@@ -575,3 +577,33 @@ cdef class PluDecomposition():
         if self._MEM_ALLOCATED:    
             del self.rr
             del self.cpcm
+
+def inverse(pcm: Union[scipy.sparse.spmatrix, np.ndarray]) -> scipy.sparse.spmatrix:
+    """
+    Compute the inverse of a given parity check matrix.
+    
+    Parameters:
+        pcm (Union[scipy.sparse.spmatrix, np.ndarray]): The parity check matrix for inversion.
+        
+    Returns:
+        scipy.sparse.spmatrix: The inverse of the parity check matrix.
+    """
+    assert pcm.shape[0] == pcm.shape[1], "The input matrix must be square."
+    cdef vector[vector[int]] csr_list = Py2CsrList(pcm)
+    cdef vector[vector[int]] inv_csr = inverse_csr(csr_list)
+    return csr_to_scipy_sparse(inv_csr, pcm.shape[0], pcm.shape[1])
+
+def left_inverse(pcm: Union[scipy.sparse.spmatrix, np.ndarray]) -> scipy.sparse.spmatrix:
+    """
+    Compute the inverse of a given parity check matrix.
+    
+    Parameters:
+        pcm (Union[scipy.sparse.spmatrix, np.ndarray]): The parity check matrix for inversion.
+        
+    Returns:
+        scipy.sparse.spmatrix: The inverse of the parity check matrix.
+    """
+    # assert pcm.shape[0] == pcm.shape[1], "The input matrix must be square."
+    cdef vector[vector[int]] csr_list = Py2CsrList(pcm)
+    cdef vector[vector[int]] inv_csr = left_inverse_csr(csr_list)
+    return csr_to_scipy_sparse(inv_csr, pcm.shape[0], pcm.shape[1])

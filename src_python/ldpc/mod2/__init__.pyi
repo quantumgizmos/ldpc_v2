@@ -201,3 +201,27 @@ class PluDecomposition():
             np.ndarray: Array of pivot positions.
         """
 
+
+def inverse(pcm: Union[scipy.sparse.spmatrix, np.ndarray]) -> scipy.sparse.spmatrix:
+    """
+    Compute the inverse of a given parity check matrix.
+    
+    Parameters:
+        pcm (Union[scipy.sparse.spmatrix, np.ndarray]): The parity check matrix for inversion.
+        
+    Returns:
+        scipy.sparse.spmatrix: The inverse of the parity check matrix.
+    """
+
+
+def left_inverse(pcm: Union[scipy.sparse.spmatrix, np.ndarray]) -> scipy.sparse.spmatrix:
+    """
+    Compute the inverse of a given parity check matrix.
+    
+    Parameters:
+        pcm (Union[scipy.sparse.spmatrix, np.ndarray]): The parity check matrix for inversion.
+        
+    Returns:
+        scipy.sparse.spmatrix: The inverse of the parity check matrix.
+    """
+
